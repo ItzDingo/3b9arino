@@ -1,23 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>3b9arino</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3b9arino - Immersive Experience</title>
     <style>
-        body, html {
+        * {
             margin: 0;
             padding: 0;
-            height: 100%;
-            overflow: hidden;
-            font-family: 'Arial', sans-serif;
+            box-sizing: border-box;
         }
 
-        .video-background, .video-foreground {
+        body, html {
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+        }
+
+        .video-container {
             position: fixed;
             top: 0;
             left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 9999;
+            background: #000;
+        }
+
+        .video-player {
             width: 100%;
             height: 100%;
-            z-index: -1;
+            border: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
         }
 
         .overlay {
@@ -26,87 +44,471 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(230, 0, 115, 0.3));
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1;
             flex-direction: column;
+            z-index: 10000;
+            backdrop-filter: blur(10px);
         }
 
-        .title {
-            color: white;
-            font-size: 5rem;
+        .logo {
+            font-size: 6rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #ff006e, #8338ec, #3a86ff);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             text-align: center;
-            text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073;
-            animation: glow 1.5s ease-in-out infinite alternate;
+            animation: gradientShift 3s ease infinite, float 6s ease-in-out infinite;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 30px rgba(255, 0, 110, 0.5);
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInUp 2s ease;
         }
 
         .start-button {
-            margin-top: 30px;
-            padding: 20px 40px;
-            font-size: 1.5rem;
-            background-color: #e60073;
+            padding: 20px 50px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            background: linear-gradient(45deg, #ff006e, #8338ec);
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 50px;
             cursor: pointer;
-            animation: pulse 2s infinite;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 0, 110, 0.3);
+            position: relative;
+            overflow: hidden;
         }
 
-        @keyframes glow {
+        .start-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 0, 110, 0.4);
+        }
+
+        .start-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .start-button:hover::before {
+            left: 100%;
+        }
+
+        .video-controls {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10001;
+            display: none;
+        }
+
+        .nav-button {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-button:hover {
+            background: rgba(255, 0, 110, 0.8);
+            border-color: rgba(255, 255, 255, 0.8);
+            transform: scale(1.1);
+        }
+
+        .prev-button {
+            left: 30px;
+        }
+
+        .next-button {
+            right: 30px;
+        }
+
+        .add-video-panel {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(15px);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 10001;
+            display: none;
+            width: 400px;
+        }
+
+        .panel-title {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .add-video-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .add-video-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .add-video-button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(45deg, #ff006e, #8338ec);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .add-video-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .toggle-panel-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            z-index: 10001;
+            display: none;
+        }
+
+        .toggle-panel-button:hover {
+            background: rgba(255, 0, 110, 0.8);
+            transform: scale(1.1);
+        }
+
+        .video-info {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            z-index: 10001;
+            display: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes fadeInUp {
             from {
-                text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073;
+                opacity: 0;
+                transform: translateY(30px);
             }
             to {
-                text-shadow: 0 0 20px #fff, 0 0 30px #ff4da6, 0 0 40px #ff4da6, 0 0 50px #ff4da6;
+                opacity: 1;
+                transform: translateY(0);
             }
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 4rem;
+            }
+            
+            .subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .nav-button {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+            
+            .add-video-panel {
+                width: 300px;
+                margin: 0 20px;
+            }
         }
     </style>
 </head>
 <body>
-
-    <!-- Overlay with title and start button -->
+    <!-- Loading Overlay -->
     <div class="overlay" id="overlay">
-        <h1 class="title">IMMERSIVE EXPERIENCE</h1>
-        <button class="start-button" onclick="startVideo()">Start</button>
+        <h1 class="logo">3B9ARINO</h1>
+        <p class="subtitle">Immersive Video Experience</p>
+        <button class="start-button" onclick="startFullscreenExperience()">
+            Begin Journey
+        </button>
     </div>
 
-    <!-- YouTube iframe container -->
-    <div class="video-background" id="video-container" style="display:none;">
+    <!-- Video Container -->
+    <div class="video-container" id="video-container" style="display:none;">
         <iframe
             id="ytplayer"
-            class="video-foreground"
+            class="video-player"
+            src=""
             frameborder="0"
-            allow="autoplay"
-            allowfullscreen>
+            allow="autoplay; fullscreen; accelerometer; gyroscope; picture-in-picture"
+            allowfullscreen
+            webkitallowfullscreen
+            mozallowfullscreen>
         </iframe>
     </div>
 
-    <script>
-        function startVideo() {
-            const videoId = "PpBD_uHoHJk"; // Replace with actual YouTube video ID
-            const iframe = document.getElementById('ytplayer');
-            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&controls=0&mute=0&playlist=${videoId}`;
+    <!-- Navigation Controls -->
+    <div class="video-controls prev-button nav-button" onclick="previousVideo()">
+        &#8249;
+    </div>
+    <div class="video-controls next-button nav-button" onclick="nextVideo()">
+        &#8250;
+    </div>
 
-            // Show video, hide overlay
-            document.getElementById('video-container').style.display = 'block';
+    <!-- Video Info Display -->
+    <div class="video-info" id="video-info">
+        Video <span id="current-index">1</span> of <span id="total-videos">1</span>
+    </div>
+
+    <!-- Add Video Panel -->
+    <div class="add-video-panel" id="add-video-panel">
+        <div class="panel-title">Add New Video</div>
+        <input 
+            type="text" 
+            class="add-video-input" 
+            id="video-url-input" 
+            placeholder="Enter YouTube URL or Video ID"
+        >
+        <button class="add-video-button" onclick="addVideo()">Add Video</button>
+    </div>
+
+    <!-- Toggle Panel Button -->
+    <div class="toggle-panel-button" id="toggle-panel-button" onclick="toggleAddPanel()">
+        +
+    </div>
+
+    <script>
+        // Video playlist management
+        let videoPlaylist = [
+            "1U9vD-9gISc", // Default video
+        ];
+        
+        let currentVideoIndex = 0;
+        let isPlaying = false;
+
+        async function startFullscreenExperience() {
+            // Load and start video without fullscreen
+            loadVideo(currentVideoIndex);
+            
+            // Hide overlay and show video
             document.getElementById('overlay').style.display = 'none';
+            document.getElementById('video-container').style.display = 'block';
+            
+            // Show all controls
+            document.querySelectorAll('.video-controls').forEach(el => {
+                el.style.display = 'flex';
+            });
+            document.getElementById('toggle-panel-button').style.display = 'block';
+            document.getElementById('video-info').style.display = 'block';
+            
+            updateVideoInfo();
+            isPlaying = true;
         }
 
-        // Prevent pausing with keyboard/mouse
+        function loadVideo(index) {
+            if (index < 0 || index >= videoPlaylist.length) return;
+            
+            const videoId = videoPlaylist[index];
+            const iframe = document.getElementById('ytplayer');
+            
+            // Fixed parameters - removed mute=0 and changed to mute=0 for sound
+            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&controls=0&mute=0&playlist=${videoId}&rel=0&modestbranding=1&disablekb=1&iv_load_policy=3&cc_load_policy=0&playsinline=1`;
+            
+            currentVideoIndex = index;
+            updateVideoInfo();
+        }
+
+        function nextVideo() {
+            const nextIndex = (currentVideoIndex + 1) % videoPlaylist.length;
+            loadVideo(nextIndex);
+        }
+
+        function previousVideo() {
+            const prevIndex = currentVideoIndex === 0 ? videoPlaylist.length - 1 : currentVideoIndex - 1;
+            loadVideo(prevIndex);
+        }
+
+        function addVideo() {
+            const input = document.getElementById('video-url-input');
+            const url = input.value.trim();
+            
+            if (!url) return;
+            
+            let videoId = extractVideoId(url);
+            
+            if (videoId && !videoPlaylist.includes(videoId)) {
+                videoPlaylist.push(videoId);
+                input.value = '';
+                updateVideoInfo();
+                
+                // Visual feedback
+                const button = document.querySelector('.add-video-button');
+                const originalText = button.textContent;
+                button.textContent = 'Added!';
+                button.style.background = 'linear-gradient(45deg, #00ff88, #00cc6a)';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = 'linear-gradient(45deg, #ff006e, #8338ec)';
+                }, 1500);
+            }
+        }
+
+        function extractVideoId(url) {
+            const patterns = [
+                /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+                /^([a-zA-Z0-9_-]{11})$/
+            ];
+            
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match) return match[1];
+            }
+            
+            return null;
+        }
+
+        function toggleAddPanel() {
+            const panel = document.getElementById('add-video-panel');
+            const button = document.getElementById('toggle-panel-button');
+            
+            if (panel.style.display === 'none' || !panel.style.display) {
+                panel.style.display = 'block';
+                button.innerHTML = '×';
+            } else {
+                panel.style.display = 'none';
+                button.innerHTML = '+';
+            }
+        }
+
+        function updateVideoInfo() {
+            document.getElementById('current-index').textContent = currentVideoIndex + 1;
+            document.getElementById('total-videos').textContent = videoPlaylist.length;
+        }
+
+        // Enhanced prevention of user interference
         document.addEventListener('contextmenu', e => e.preventDefault());
+        
+        // Prevent all possible video interactions
         document.addEventListener('keydown', e => {
-            if ([32, 75, 80].includes(e.keyCode)) {
+            // Block ALL keys when video is playing
+            if (isPlaying) {
                 e.preventDefault();
+                e.stopPropagation();
+                return false;
             }
         });
+
+        // Prevent mouse interactions with video
+        document.addEventListener('click', e => {
+            if (isPlaying && e.target.closest('.video-container')) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        });
+
+        // Prevent double-click
+        document.addEventListener('dblclick', e => {
+            if (isPlaying) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        });
+
+        // Prevent mouse wheel
+        document.addEventListener('wheel', e => {
+            if (isPlaying) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // Handle Enter key in input
+        document.getElementById('video-url-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.stopPropagation();
+                addVideo();
+            }
+        });
+
+        // Allow typing in input field even when video is playing
+        document.getElementById('video-url-input').addEventListener('keydown', (e) => {
+            e.stopPropagation();
+        });
+
+        // Auto-hide panel when clicking outside
+        document.addEventListener('click', (e) => {
+            const panel = document.getElementById('add-video-panel');
+            const button = document.getElementById('toggle-panel-button');
+            
+            if (!panel.contains(e.target) && e.target !== button && panel.style.display === 'block') {
+                panel.style.display = 'none';
+                button.innerHTML = '+';
+            }
+        });
+
+        // Remove all fullscreen event listeners
+        // No fullscreen functionality needed
     </script>
 </body>
 </html>
