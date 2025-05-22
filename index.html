@@ -238,6 +238,47 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
+        /* Volume Control Styles */
+        .volume-control {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            z-index: 10001;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .volume-slider {
+            width: 100px;
+            -webkit-appearance: none;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .volume-slider:hover {
+            opacity: 1;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #ff006e;
+            cursor: pointer;
+        }
+
+        .volume-icon {
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
         @keyframes gradientShift {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
@@ -307,16 +348,22 @@
     </div>
 
     <!-- Navigation Controls -->
-    <div class="video-controls prev-button nav-button" onclick="previousVideo()">
+    <div class="video-controls prev-button nav-button" onclick="previousVideo()" style="display: none;">
         &#8249;
     </div>
-    <div class="video-controls next-button nav-button" onclick="nextVideo()">
+    <div class="video-controls next-button nav-button" onclick="nextVideo()" style="display: none;">
         &#8250;
     </div>
 
     <!-- Video Info Display -->
     <div class="video-info" id="video-info">
         Video <span id="current-index">1</span> of <span id="total-videos">1</span>
+    </div>
+
+    <!-- Volume Control -->
+    <div class="volume-control" id="volume-control">
+        <span class="volume-icon" id="volume-icon">🔊</span>
+        <input type="range" min="0" max="100" value="50" class="volume-slider" id="volume-slider">
     </div>
 
     <!-- Add Video Panel -->
@@ -333,17 +380,18 @@
 
     <!-- Toggle Panel Button -->
     <div class="toggle-panel-button" id="toggle-panel-button" onclick="toggleAddPanel()">
-        +
+        ♫
     </div>
 
     <script>
         // Video playlist management
         let videoPlaylist = [
-            "1U9vD-9gISc", // Default video
+            "", // Default video
         ];
         
         let currentVideoIndex = 0;
         let isPlaying = false;
+        let currentVolume = 50; // Default volume level
 
         async function startFullscreenExperience() {
             // Load and start video without fullscreen
@@ -359,6 +407,7 @@
             });
             document.getElementById('toggle-panel-button').style.display = 'block';
             document.getElementById('video-info').style.display = 'block';
+            document.getElementById('volume-control').style.display = 'flex';
             
             updateVideoInfo();
             isPlaying = true;
@@ -370,8 +419,8 @@
             const videoId = videoPlaylist[index];
             const iframe = document.getElementById('ytplayer');
             
-            // Fixed parameters - removed mute=0 and changed to mute=0 for sound
-            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&controls=0&mute=0&playlist=${videoId}&rel=0&modestbranding=1&disablekb=1&iv_load_policy=3&cc_load_policy=0&playsinline=1`;
+            // Include volume parameter in the URL
+            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&controls=0&mute=0&playlist=${videoId}&rel=0&modestbranding=1&disablekb=1&iv_load_policy=3&cc_load_policy=0&playsinline=1&volume=${currentVolume}`;
             
             currentVideoIndex = index;
             updateVideoInfo();
@@ -436,7 +485,7 @@
                 button.innerHTML = '×';
             } else {
                 panel.style.display = 'none';
-                button.innerHTML = '+';
+                button.innerHTML = '♫';
             }
         }
 
@@ -444,6 +493,43 @@
             document.getElementById('current-index').textContent = currentVideoIndex + 1;
             document.getElementById('total-videos').textContent = videoPlaylist.length;
         }
+
+        // Volume control functionality
+        document.getElementById('volume-slider').addEventListener('input', function() {
+            currentVolume = this.value;
+            const iframe = document.getElementById('ytplayer');
+            // Note: YouTube iframe volume can't be changed directly, we need to reload
+            if (isPlaying) {
+                loadVideo(currentVideoIndex);
+            }
+            
+            // Update volume icon
+            const volumeIcon = document.getElementById('volume-icon');
+            if (currentVolume == 0) {
+                volumeIcon.textContent = '🔇';
+            } else if (currentVolume < 30) {
+                volumeIcon.textContent = '🔈';
+            } else {
+                volumeIcon.textContent = '🔊';
+            }
+        });
+
+        // Toggle mute when clicking volume icon
+        document.getElementById('volume-icon').addEventListener('click', function() {
+            const slider = document.getElementById('volume-slider');
+            if (currentVolume > 0) {
+                slider.value = 0;
+                currentVolume = 0;
+                this.textContent = '🔇';
+            } else {
+                slider.value = 50;
+                currentVolume = 50;
+                this.textContent = '🔊';
+            }
+            if (isPlaying) {
+                loadVideo(currentVideoIndex);
+            }
+        });
 
         // Enhanced prevention of user interference
         document.addEventListener('contextmenu', e => e.preventDefault());
@@ -503,12 +589,9 @@
             
             if (!panel.contains(e.target) && e.target !== button && panel.style.display === 'block') {
                 panel.style.display = 'none';
-                button.innerHTML = '+';
+                button.innerHTML = '♫';
             }
         });
-
-        // Remove all fullscreen event listeners
-        // No fullscreen functionality needed
     </script>
 </body>
 </html>
