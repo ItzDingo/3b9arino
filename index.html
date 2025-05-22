@@ -211,12 +211,16 @@
             background: rgba(0, 0, 0, 0.8);
             border: 2px solid rgba(255, 255, 255, 0.3);
             color: white;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             cursor: pointer;
             transition: all 0.3s ease;
             backdrop-filter: blur(10px);
             z-index: 10001;
             display: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
         }
 
         .toggle-panel-button:hover {
@@ -247,6 +251,11 @@
             display: none;
             align-items: center;
             gap: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 10px 15px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .volume-slider {
@@ -277,6 +286,8 @@
             color: white;
             font-size: 1.5rem;
             cursor: pointer;
+            width: 24px;
+            text-align: center;
         }
 
         @keyframes gradientShift {
@@ -320,6 +331,12 @@
                 width: 300px;
                 margin: 0 20px;
             }
+            
+            .volume-control {
+                bottom: 100px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
         }
     </style>
 </head>
@@ -335,16 +352,7 @@
 
     <!-- Video Container -->
     <div class="video-container" id="video-container" style="display:none;">
-        <iframe
-            id="ytplayer"
-            class="video-player"
-            src=""
-            frameborder="0"
-            allow="autoplay; fullscreen; accelerometer; gyroscope; picture-in-picture"
-            allowfullscreen
-            webkitallowfullscreen
-            mozallowfullscreen>
-        </iframe>
+        <div id="player"></div>
     </div>
 
     <!-- Navigation Controls -->
@@ -383,18 +391,99 @@
         ♫
     </div>
 
+    <!-- YouTube IFrame API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    
     <script>
         // Video playlist management
         let videoPlaylist = [
             "", // Default video
+
         ];
         
         let currentVideoIndex = 0;
         let isPlaying = false;
         let currentVolume = 50; // Default volume level
+        let player;
+        let shouldShowOverlay = true;
+
+        // Check localStorage for saved state
+        function checkSavedState() {
+            const savedState = localStorage.getItem('videoPlayerState');
+            if (savedState) {
+                const state = JSON.parse(savedState);
+                videoPlaylist = state.playlist || videoPlaylist;
+                currentVideoIndex = state.currentIndex || 0;
+                currentVolume = state.volume || 50;
+                document.getElementById('volume-slider').value = currentVolume;
+                updateVolumeIcon();
+                
+                // If there was a video playing, start it automatically
+                if (state.isPlaying) {
+                    shouldShowOverlay = false;
+                    document.getElementById('overlay').style.display = 'none';
+                    startFullscreenExperience();
+                }
+            }
+        }
+
+        // Save current state to localStorage
+        function saveState() {
+            const state = {
+                playlist: videoPlaylist,
+                currentIndex: currentVideoIndex,
+                volume: currentVolume,
+                isPlaying: isPlaying
+            };
+            localStorage.setItem('videoPlayerState', JSON.stringify(state));
+        }
+
+        // Initialize on page load
+        window.onload = function() {
+            checkSavedState();
+            
+            // Setup beforeunload to clear state when actually closing
+            window.addEventListener('beforeunload', function() {
+                if (!shouldShowOverlay) {
+                    localStorage.removeItem('videoPlayerState');
+                }
+            });
+        };
+
+        // YouTube Player API
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '100%',
+                width: '100%',
+                playerVars: {
+                    'autoplay': 0,
+                    'controls': 0,
+                    'disablekb': 1,
+                    'fs': 0,
+                    'rel': 0,
+                    'modestbranding': 1,
+                    'playsinline': 1
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            if (!shouldShowOverlay) {
+                loadVideo(currentVideoIndex);
+            }
+        }
+
+        function onPlayerStateChange(event) {
+            // Save state when video changes
+            saveState();
+        }
 
         async function startFullscreenExperience() {
-            // Load and start video without fullscreen
+            // Load and start video
             loadVideo(currentVideoIndex);
             
             // Hide overlay and show video
@@ -405,25 +494,32 @@
             document.querySelectorAll('.video-controls').forEach(el => {
                 el.style.display = 'flex';
             });
-            document.getElementById('toggle-panel-button').style.display = 'block';
+            document.getElementById('toggle-panel-button').style.display = 'flex';
             document.getElementById('video-info').style.display = 'block';
             document.getElementById('volume-control').style.display = 'flex';
             
             updateVideoInfo();
             isPlaying = true;
+            shouldShowOverlay = false;
+            saveState();
         }
 
         function loadVideo(index) {
             if (index < 0 || index >= videoPlaylist.length) return;
             
             const videoId = videoPlaylist[index];
-            const iframe = document.getElementById('ytplayer');
-            
-            // Include volume parameter in the URL
-            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&controls=0&mute=0&playlist=${videoId}&rel=0&modestbranding=1&disablekb=1&iv_load_policy=3&cc_load_policy=0&playsinline=1&volume=${currentVolume}`;
-            
             currentVideoIndex = index;
+            
+            if (player) {
+                player.loadVideoById({
+                    videoId: videoId,
+                    suggestedQuality: 'highres'
+                });
+                player.setVolume(currentVolume);
+            }
+            
             updateVideoInfo();
+            saveState();
         }
 
         function nextVideo() {
@@ -459,6 +555,8 @@
                     button.textContent = originalText;
                     button.style.background = 'linear-gradient(45deg, #ff006e, #8338ec)';
                 }, 1500);
+                
+                saveState();
             }
         }
 
@@ -483,9 +581,11 @@
             if (panel.style.display === 'none' || !panel.style.display) {
                 panel.style.display = 'block';
                 button.innerHTML = '×';
+                button.style.fontSize = '2.5rem';
             } else {
                 panel.style.display = 'none';
                 button.innerHTML = '♫';
+                button.style.fontSize = '1.8rem';
             }
         }
 
@@ -494,16 +594,7 @@
             document.getElementById('total-videos').textContent = videoPlaylist.length;
         }
 
-        // Volume control functionality
-        document.getElementById('volume-slider').addEventListener('input', function() {
-            currentVolume = this.value;
-            const iframe = document.getElementById('ytplayer');
-            // Note: YouTube iframe volume can't be changed directly, we need to reload
-            if (isPlaying) {
-                loadVideo(currentVideoIndex);
-            }
-            
-            // Update volume icon
+        function updateVolumeIcon() {
             const volumeIcon = document.getElementById('volume-icon');
             if (currentVolume == 0) {
                 volumeIcon.textContent = '🔇';
@@ -512,6 +603,16 @@
             } else {
                 volumeIcon.textContent = '🔊';
             }
+        }
+
+        // Volume control functionality
+        document.getElementById('volume-slider').addEventListener('input', function() {
+            currentVolume = this.value;
+            if (player) {
+                player.setVolume(currentVolume);
+            }
+            updateVolumeIcon();
+            saveState();
         });
 
         // Toggle mute when clicking volume icon
@@ -520,15 +621,15 @@
             if (currentVolume > 0) {
                 slider.value = 0;
                 currentVolume = 0;
-                this.textContent = '🔇';
             } else {
                 slider.value = 50;
                 currentVolume = 50;
-                this.textContent = '🔊';
             }
-            if (isPlaying) {
-                loadVideo(currentVideoIndex);
+            if (player) {
+                player.setVolume(currentVolume);
             }
+            updateVolumeIcon();
+            saveState();
         });
 
         // Enhanced prevention of user interference
@@ -590,6 +691,7 @@
             if (!panel.contains(e.target) && e.target !== button && panel.style.display === 'block') {
                 panel.style.display = 'none';
                 button.innerHTML = '♫';
+                button.style.fontSize = '1.8rem';
             }
         });
     </script>
