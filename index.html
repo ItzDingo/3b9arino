@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3B9ARINO | Ultimate Music Experience</title>
+    <title>3B9ARINO | Cyber Music Experience</title>
     <style>
         :root {
             --neon-pink: #ff2a6d;
@@ -11,7 +11,8 @@
             --neon-purple: #d300c5;
             --dark-bg: #0d0221;
             --darker-bg: #05010d;
-            --glow: 0 0 10px rgba(5, 217, 232, 0.7);
+            --glow-blue: 0 0 10px rgba(5, 217, 232, 0.7);
+            --glow-pink: 0 0 10px rgba(255, 42, 109, 0.7);
         }
 
         * {
@@ -21,7 +22,7 @@
             font-family: 'Rajdhani', 'Orbitron', sans-serif;
         }
 
-        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Orbitron:wght@500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Orbitron:wght@500;700&display=swap');
 
         body, html {
             height: 100%;
@@ -33,7 +34,7 @@
                 radial-gradient(circle at 80% 70%, rgba(5, 217, 232, 0.15) 0%, transparent 30%);
         }
 
-        /* Cyberpunk overlay effect */
+        /* Cyberpunk overlay effects */
         .scanlines {
             position: fixed;
             top: 0;
@@ -48,6 +49,24 @@
             background-size: 100% 0.5rem;
             pointer-events: none;
             z-index: 9998;
+            animation: scanline-anim 2s linear infinite;
+        }
+
+        @keyframes scanline-anim {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-0.5rem); }
+        }
+
+        .glitch-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.05"/></svg>');
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: overlay;
         }
 
         .video-container {
@@ -56,7 +75,7 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            z-index: 9999;
+            z-index: 9997;
             background: var(--darker-bg);
         }
 
@@ -81,7 +100,7 @@
             background: transparent;
         }
 
-        /* Glowing cyberpunk overlay */
+        /* Main overlay */
         .overlay {
             position: fixed;
             top: 0;
@@ -95,6 +114,12 @@
             flex-direction: column;
             z-index: 10000;
             backdrop-filter: blur(3px);
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .logo {
@@ -106,10 +131,62 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-align: center;
-            animation: gradientShift 3s ease infinite, float 6s ease-in-out infinite;
+            animation: 
+                gradientShift 3s ease infinite, 
+                float 6s ease-in-out infinite,
+                glitch-anim 5s infinite;
             margin-bottom: 1.5rem;
-            text-shadow: 0 0 15px var(--neon-pink), 0 0 25px var(--neon-blue);
+            text-shadow: 
+                0 0 15px var(--neon-pink), 
+                0 0 25px var(--neon-blue);
             letter-spacing: 3px;
+            position: relative;
+        }
+
+        .logo::before {
+            content: attr(data-text);
+            position: absolute;
+            left: -2px;
+            text-shadow: 2px 0 var(--neon-blue);
+            clip: rect(0, 900px, 0, 0);
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+        }
+
+        .logo::after {
+            content: attr(data-text);
+            position: absolute;
+            left: 2px;
+            text-shadow: -2px 0 var(--neon-pink);
+            clip: rect(0, 900px, 0, 0);
+            animation: glitch-anim 2.5s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim {
+            0% { clip: rect(32px, 9999px, 34px, 0); }
+            10% { clip: rect(12px, 9999px, 44px, 0); }
+            20% { clip: rect(48px, 9999px, 36px, 0); }
+            30% { clip: rect(14px, 9999px, 24px, 0); }
+            40% { clip: rect(26px, 9999px, 33px, 0); }
+            50% { clip: rect(47px, 9999px, 30px, 0); }
+            60% { clip: rect(51px, 9999px, 32px, 0); }
+            70% { clip: rect(18px, 9999px, 38px, 0); }
+            80% { clip: rect(40px, 9999px, 20px, 0); }
+            90% { clip: rect(19px, 9999px, 53px, 0); }
+            100% { clip: rect(28px, 9999px, 50px, 0); }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% { clip: rect(65px, 9999px, 119px, 0); }
+            10% { clip: rect(79px, 9999px, 85px, 0); }
+            20% { clip: rect(101px, 9999px, 10px, 0); }
+            30% { clip: rect(92px, 9999px, 103px, 0); }
+            40% { clip: rect(80px, 9999px, 109px, 0); }
+            50% { clip: rect(111px, 9999px, 93px, 0); }
+            60% { clip: rect(64px, 9999px, 16px, 0); }
+            70% { clip: rect(117px, 9999px, 44px, 0); }
+            80% { clip: rect(104px, 9999px, 72px, 0); }
+            90% { clip: rect(91px, 9999px, 58px, 0); }
+            100% { clip: rect(13px, 9999px, 96px, 0); }
         }
 
         .subtitle {
@@ -117,10 +194,17 @@
             font-size: 1.3rem;
             text-align: center;
             margin-bottom: 3rem;
-            animation: fadeInUp 2s ease;
+            animation: 
+                fadeInUp 1.5s ease both,
+                textGlow 3s ease infinite alternate;
             font-family: 'Rajdhani', sans-serif;
             text-transform: uppercase;
             letter-spacing: 2px;
+        }
+
+        @keyframes textGlow {
+            0% { text-shadow: 0 0 5px var(--neon-blue); }
+            100% { text-shadow: 0 0 15px var(--neon-pink); }
         }
 
         /* Cyberpunk button */
@@ -133,38 +217,53 @@
             border: 2px solid var(--neon-blue);
             border-radius: 0;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
             overflow: hidden;
             font-family: 'Orbitron', sans-serif;
             letter-spacing: 2px;
             text-transform: uppercase;
-            box-shadow: var(--glow);
+            box-shadow: var(--glow-blue);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 5px var(--neon-blue); }
+            50% { box-shadow: 0 0 20px var(--neon-blue); }
+            100% { box-shadow: 0 0 5px var(--neon-blue); }
         }
 
         .start-button:hover {
             color: var(--neon-pink);
             border-color: var(--neon-pink);
-            box-shadow: 0 0 15px var(--neon-pink);
+            box-shadow: var(--glow-pink);
             text-shadow: 0 0 10px var(--neon-pink);
+            transform: translateY(-3px) scale(1.05);
+            animation: none;
         }
 
-        .start-button::before {
+        .start-button::before,
+        .start-button::after {
             content: '';
             position: absolute;
             top: 0;
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 42, 109, 0.3), transparent);
-            transition: left 0.7s;
+            background: linear-gradient(90deg, transparent, rgba(255, 42, 109, 0.4), transparent);
+            transition: 0.7s;
         }
 
-        .start-button:hover::before {
+        .start-button::after {
+            transition-delay: 0.2s;
+        }
+
+        .start-button:hover::before,
+        .start-button:hover::after {
             left: 100%;
         }
 
-        /* Navigation buttons */
+        /* Navigation buttons - Fixed positioning */
         .video-controls {
             position: fixed;
             top: 50%;
@@ -173,30 +272,50 @@
             display: none;
         }
 
+        .prev-button {
+            left: 30px;
+            animation: slideInLeft 0.8s ease-out both;
+        }
+
+        .next-button {
+            right: 30px;
+            animation: slideInRight 0.8s ease-out both;
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(-50px) translateY(-50%); opacity: 0; }
+            to { transform: translateX(0) translateY(-50%); opacity: 1; }
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(50px) translateY(-50%); opacity: 0; }
+            to { transform: translateX(0) translateY(-50%); opacity: 1; }
+        }
+
         .nav-button {
-            width: 70px;
-            height: 70px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             background: rgba(13, 2, 33, 0.7);
             border: 2px solid var(--neon-blue);
             color: var(--neon-blue);
-            font-size: 1.8rem;
+            font-size: 2rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             backdrop-filter: blur(5px);
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: var(--glow);
-            font-family: 'Orbitron', sans-serif;
+            box-shadow: var(--glow-blue);
+            position: absolute;
         }
 
         .nav-button:hover {
             background: rgba(255, 42, 109, 0.3);
             border-color: var(--neon-pink);
             color: var(--neon-pink);
-            box-shadow: 0 0 15px var(--neon-pink);
-            transform: scale(1.1);
+            box-shadow: var(--glow-pink);
+            transform: translateY(-50%) scale(1.1);
         }
 
         /* Panel styling */
@@ -207,43 +326,53 @@
             transform: translateX(-50%);
             background: rgba(13, 2, 33, 0.9);
             backdrop-filter: blur(10px);
-            padding: 20px;
+            padding: 25px;
             border-radius: 5px;
             border: 1px solid var(--neon-blue);
             z-index: 10001;
             display: none;
-            width: 400px;
-            box-shadow: var(--glow);
+            width: 450px;
+            box-shadow: var(--glow-blue);
+            animation: panelSlideUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+        }
+
+        @keyframes panelSlideUp {
+            from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
 
         .panel-title {
             color: var(--neon-blue);
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 15px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
             text-align: center;
             font-family: 'Orbitron', sans-serif;
             letter-spacing: 1px;
             text-transform: uppercase;
+            text-shadow: var(--glow-blue);
         }
 
         .add-video-input {
             width: 100%;
-            padding: 12px 15px;
+            padding: 15px;
             border: 1px solid var(--neon-blue);
             border-radius: 0;
             background: rgba(5, 217, 232, 0.1);
             color: white;
-            font-size: 14px;
-            margin-bottom: 10px;
+            font-size: 16px;
+            margin-bottom: 15px;
             font-family: 'Rajdhani', sans-serif;
             transition: all 0.3s ease;
+            box-shadow: inset 0 0 10px rgba(5, 217, 232, 0.2);
         }
 
         .add-video-input:focus {
             outline: none;
             border-color: var(--neon-pink);
-            box-shadow: 0 0 10px var(--neon-pink);
+            box-shadow: 
+                inset 0 0 15px rgba(255, 42, 109, 0.3),
+                0 0 15px var(--neon-pink);
         }
 
         .add-video-input::placeholder {
@@ -254,24 +383,43 @@
         /* Cyberpunk panel button */
         .add-video-button {
             width: 100%;
-            padding: 12px;
+            padding: 15px;
             background: transparent;
             color: var(--neon-blue);
             border: 1px solid var(--neon-blue);
             border-radius: 0;
             cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
+            font-weight: 700;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             font-family: 'Orbitron', sans-serif;
             letter-spacing: 1px;
             text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--glow-blue);
         }
 
         .add-video-button:hover {
             background: rgba(255, 42, 109, 0.2);
             color: var(--neon-pink);
             border-color: var(--neon-pink);
-            box-shadow: 0 0 10px var(--neon-pink);
+            box-shadow: var(--glow-pink);
+            transform: translateY(-3px);
+        }
+
+        .add-video-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 42, 109, 0.4), transparent);
+            transition: 0.7s;
+        }
+
+        .add-video-button:hover::before {
+            left: 100%;
         }
 
         /* Toggle button */
@@ -279,29 +427,31 @@
             position: fixed;
             bottom: 30px;
             right: 30px;
-            width: 60px;
-            height: 60px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
             background: rgba(13, 2, 33, 0.7);
             border: 2px solid var(--neon-blue);
             color: var(--neon-blue);
-            font-size: 1.8rem;
+            font-size: 2rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             backdrop-filter: blur(5px);
             z-index: 10001;
             display: none;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: var(--glow);
+            box-shadow: var(--glow-blue);
+            animation: pulse 2s infinite;
         }
 
         .toggle-panel-button:hover {
             border-color: var(--neon-pink);
             color: var(--neon-pink);
-            box-shadow: 0 0 15px var(--neon-pink);
+            box-shadow: var(--glow-pink);
             transform: scale(1.1);
+            animation: none;
         }
 
         /* Info display */
@@ -311,14 +461,17 @@
             left: 20px;
             background: rgba(13, 2, 33, 0.7);
             backdrop-filter: blur(5px);
-            padding: 10px 15px;
+            padding: 12px 20px;
             border-radius: 0;
             color: var(--neon-blue);
             z-index: 10001;
             display: none;
             border: 1px solid var(--neon-blue);
             font-family: 'Rajdhani', sans-serif;
-            box-shadow: var(--glow);
+            box-shadow: var(--glow-blue);
+            animation: fadeIn 1s ease both;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         /* Volume control */
@@ -329,46 +482,61 @@
             z-index: 10001;
             display: none;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
             background: rgba(13, 2, 33, 0.7);
             backdrop-filter: blur(5px);
-            padding: 10px 15px;
+            padding: 12px 20px;
             border-radius: 0;
             border: 1px solid var(--neon-blue);
-            box-shadow: var(--glow);
+            box-shadow: var(--glow-blue);
+            animation: slideInLeft 0.8s ease-out both;
         }
 
         .volume-slider {
-            width: 100px;
+            width: 120px;
             -webkit-appearance: none;
             height: 4px;
             background: rgba(5, 217, 232, 0.3);
             border-radius: 2px;
             outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .volume-slider:hover {
+            background: rgba(255, 42, 109, 0.3);
         }
 
         .volume-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 15px;
-            height: 15px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             background: var(--neon-blue);
             cursor: pointer;
-            box-shadow: 0 0 5px var(--neon-blue);
+            box-shadow: 0 0 10px var(--neon-blue);
+            transition: all 0.3s ease;
+        }
+
+        .volume-slider::-webkit-slider-thumb:hover {
+            background: var(--neon-pink);
+            box-shadow: 0 0 15px var(--neon-pink);
+            transform: scale(1.1);
         }
 
         .volume-icon {
             color: var(--neon-blue);
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             cursor: pointer;
-            width: 24px;
+            width: 30px;
             text-align: center;
             transition: all 0.3s ease;
+            text-shadow: var(--glow-blue);
         }
 
         .volume-icon:hover {
             color: var(--neon-pink);
-            text-shadow: 0 0 10px var(--neon-pink);
+            text-shadow: var(--glow-pink);
+            transform: scale(1.1);
         }
 
         /* Animations */
@@ -394,20 +562,6 @@
             }
         }
 
-        /* Glitch effect on hover */
-        .logo:hover {
-            animation: glitch 1s linear infinite;
-        }
-
-        @keyframes glitch {
-            0% { transform: translate(0); }
-            20% { transform: translate(-3px, 3px); }
-            40% { transform: translate(-3px, -3px); }
-            60% { transform: translate(3px, 3px); }
-            80% { transform: translate(3px, -3px); }
-            100% { transform: translate(0); }
-        }
-
         /* Responsive design */
         @media (max-width: 768px) {
             .logo {
@@ -419,30 +573,42 @@
             }
             
             .nav-button {
-                width: 50px;
-                height: 50px;
+                width: 60px;
+                height: 60px;
                 font-size: 1.5rem;
             }
             
             .add-video-panel {
-                width: 300px;
+                width: 90%;
+                max-width: 350px;
             }
             
             .volume-control {
-                bottom: 100px;
+                bottom: 110px;
                 left: 50%;
                 transform: translateX(-50%);
+                width: 80%;
+                max-width: 300px;
+            }
+            
+            .toggle-panel-button {
+                width: 60px;
+                height: 60px;
+                font-size: 1.8rem;
+                bottom: 25px;
+                right: 25px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Scanlines effect -->
+    <!-- Visual effects -->
     <div class="scanlines"></div>
+    <div class="glitch-overlay"></div>
 
     <!-- Loading Overlay -->
     <div class="overlay" id="overlay">
-        <h1 class="logo">3B9ARINO</h1>
+        <h1 class="logo" data-text="3B9ARINO">3B9ARINO</h1>
         <p class="subtitle">Cyberpunk Music Experience</p>
         <button class="start-button" onclick="startFullscreenExperience()">
             Initiate Sequence
@@ -455,12 +621,12 @@
         <div class="video-overlay" id="video-overlay"></div>
     </div>
 
-    <!-- Navigation Controls -->
-    <div class="video-controls prev-button nav-button" onclick="previousVideo()" style="display: none;">
-        «
+    <!-- Navigation Controls - Now properly positioned -->
+    <div class="video-controls prev-button" onclick="previousVideo()" style="display: none;">
+        <div class="nav-button">«</div>
     </div>
-    <div class="video-controls next-button nav-button" onclick="nextVideo()" style="display: none;">
-        »
+    <div class="video-controls next-button" onclick="nextVideo()" style="display: none;">
+        <div class="nav-button">»</div>
     </div>
 
     <!-- Video Info Display -->
@@ -636,11 +802,25 @@
         function nextVideo() {
             const nextIndex = (currentVideoIndex + 1) % videoPlaylist.length;
             loadVideo(nextIndex);
+            
+            // Add animation feedback
+            const nextBtn = document.querySelector('.next-button .nav-button');
+            nextBtn.style.transform = 'translateY(-50%) scale(0.9)';
+            setTimeout(() => {
+                nextBtn.style.transform = 'translateY(-50%) scale(1)';
+            }, 200);
         }
 
         function previousVideo() {
             const prevIndex = currentVideoIndex === 0 ? videoPlaylist.length - 1 : currentVideoIndex - 1;
             loadVideo(prevIndex);
+            
+            // Add animation feedback
+            const prevBtn = document.querySelector('.prev-button .nav-button');
+            prevBtn.style.transform = 'translateY(-50%) scale(0.9)';
+            setTimeout(() => {
+                prevBtn.style.transform = 'translateY(-50%) scale(1)';
+            }, 200);
         }
 
         function addVideo() {
@@ -662,15 +842,66 @@
                 button.style.background = 'rgba(0, 255, 136, 0.1)';
                 button.style.borderColor = 'var(--neon-pink)';
                 button.style.color = 'var(--neon-pink)';
+                button.style.boxShadow = 'var(--glow-pink)';
+                
+                // Create particle effect
+                createParticles(button);
                 
                 setTimeout(() => {
                     button.textContent = originalText;
                     button.style.background = 'transparent';
                     button.style.borderColor = 'var(--neon-blue)';
                     button.style.color = 'var(--neon-blue)';
+                    button.style.boxShadow = 'var(--glow-blue)';
                 }, 1500);
                 
                 saveState();
+            }
+        }
+
+        // Create particle effect for button feedback
+        function createParticles(element) {
+            const rect = element.getBoundingClientRect();
+            const particles = 15;
+            
+            for (let i = 0; i < particles; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'fixed';
+                particle.style.width = '4px';
+                particle.style.height = '4px';
+                particle.style.backgroundColor = i % 2 ? 'var(--neon-pink)' : 'var(--neon-blue)';
+                particle.style.borderRadius = '50%';
+                particle.style.pointerEvents = 'none';
+                particle.style.left = `${rect.left + rect.width/2}px`;
+                particle.style.top = `${rect.top + rect.height/2}px`;
+                particle.style.zIndex = '10010';
+                particle.style.boxShadow = i % 2 ? 'var(--glow-pink)' : 'var(--glow-blue)';
+                
+                document.body.appendChild(particle);
+                
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = 1 + Math.random() * 3;
+                const lifetime = 800 + Math.random() * 400;
+                
+                const x = Math.cos(angle) * velocity;
+                const y = Math.sin(angle) * velocity;
+                
+                let start = null;
+                function animate(timestamp) {
+                    if (!start) start = timestamp;
+                    const progress = timestamp - start;
+                    
+                    particle.style.transform = `translate(${x * progress/10}px, ${y * progress/10}px)`;
+                    particle.style.opacity = 1 - (progress / lifetime);
+                    
+                    if (progress < lifetime) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        particle.remove();
+                    }
+                }
+                
+                requestAnimationFrame(animate);
             }
         }
 
@@ -706,6 +937,12 @@
         function updateVideoInfo() {
             document.getElementById('current-index').textContent = currentVideoIndex + 1;
             document.getElementById('total-videos').textContent = videoPlaylist.length;
+            
+            // Add animation to info display
+            const info = document.getElementById('video-info');
+            info.style.animation = 'none';
+            void info.offsetWidth; // Trigger reflow
+            info.style.animation = 'pulse 0.5s ease';
         }
 
         function updateVolumeIcon() {
@@ -713,12 +950,15 @@
             if (currentVolume == 0) {
                 volumeIcon.textContent = '🔇';
                 volumeIcon.style.color = 'var(--neon-pink)';
+                volumeIcon.style.textShadow = 'var(--glow-pink)';
             } else if (currentVolume < 30) {
                 volumeIcon.textContent = '🔈';
                 volumeIcon.style.color = 'var(--neon-blue)';
+                volumeIcon.style.textShadow = 'var(--glow-blue)';
             } else {
                 volumeIcon.textContent = '🔊';
                 volumeIcon.style.color = 'var(--neon-blue)';
+                volumeIcon.style.textShadow = 'var(--glow-blue)';
             }
         }
 
@@ -747,6 +987,12 @@
             }
             updateVolumeIcon();
             saveState();
+            
+            // Add animation feedback
+            this.style.transform = 'scale(1.3)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 200);
         });
 
         // Enhanced prevention of user interference
