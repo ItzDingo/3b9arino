@@ -399,12 +399,11 @@
         let videoPlaylist = [
             "PE3tnfq9Tq8", // Default video
             "1U9vD-9gISc",
-
         ];
         
         let currentVideoIndex = 0;
         let isPlaying = false;
-        let currentVolume = 50; // Default volume level
+        let currentVolume = 50;
         let player;
         let shouldShowOverlay = true;
 
@@ -419,7 +418,6 @@
                 document.getElementById('volume-slider').value = currentVolume;
                 updateVolumeIcon();
                 
-                // If there was a video playing, start it automatically
                 if (state.isPlaying) {
                     shouldShowOverlay = false;
                     document.getElementById('overlay').style.display = 'none';
@@ -443,7 +441,6 @@
         window.onload = function() {
             checkSavedState();
             
-            // Setup beforeunload to clear state when actually closing
             window.addEventListener('beforeunload', function() {
                 if (!shouldShowOverlay) {
                     localStorage.removeItem('videoPlayerState');
@@ -451,19 +448,25 @@
             });
         };
 
-        // YouTube Player API
+        // YouTube Player API with strict controls
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('player', {
                 height: '100%',
                 width: '100%',
                 playerVars: {
-                    'autoplay': 0,
+                    'autoplay': 1,
                     'controls': 0,
                     'disablekb': 1,
                     'fs': 0,
                     'rel': 0,
                     'modestbranding': 1,
-                    'playsinline': 1
+                    'playsinline': 1,
+                    'loop': 1,
+                    'enablejsapi': 1,
+                    'iv_load_policy': 3,
+                    'cc_load_policy': 0,
+                    'showinfo': 0,
+                    'playlist': videoPlaylist.join(',')
                 },
                 events: {
                     'onReady': onPlayerReady,
@@ -476,22 +479,27 @@
             if (!shouldShowOverlay) {
                 loadVideo(currentVideoIndex);
             }
+            
+            // Additional protection against user interaction
+            player.setOption('captions', 'off');
+            player.setOption('annotations', 'off');
+            player.setOption('related', 'none');
         }
 
         function onPlayerStateChange(event) {
-            // Save state when video changes
+            // When video ends, restart it to create loop effect
+            if (event.data === YT.PlayerState.ENDED) {
+                player.playVideo();
+            }
             saveState();
         }
 
         async function startFullscreenExperience() {
-            // Load and start video
             loadVideo(currentVideoIndex);
             
-            // Hide overlay and show video
             document.getElementById('overlay').style.display = 'none';
             document.getElementById('video-container').style.display = 'block';
             
-            // Show all controls
             document.querySelectorAll('.video-controls').forEach(el => {
                 el.style.display = 'flex';
             });
@@ -512,11 +520,16 @@
             currentVideoIndex = index;
             
             if (player) {
+                // Load video as a playlist with just itself for perfect looping
                 player.loadVideoById({
                     videoId: videoId,
+                    startSeconds: 0,
                     suggestedQuality: 'highres'
                 });
+                player.setLoop(true);
                 player.setVolume(currentVolume);
+                player.mute(); // Start muted to avoid autoplay issues
+                player.unMute(); // Then unmute (works because user has interacted)
             }
             
             updateVideoInfo();
@@ -546,7 +559,6 @@
                 input.value = '';
                 updateVideoInfo();
                 
-                // Visual feedback
                 const button = document.querySelector('.add-video-button');
                 const originalText = button.textContent;
                 button.textContent = 'Added!';
@@ -636,9 +648,8 @@
         // Enhanced prevention of user interference
         document.addEventListener('contextmenu', e => e.preventDefault());
         
-        // Prevent all possible video interactions
+        // Block all keyboard input
         document.addEventListener('keydown', e => {
-            // Block ALL keys when video is playing
             if (isPlaying) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -646,7 +657,7 @@
             }
         });
 
-        // Prevent mouse interactions with video
+        // Block all mouse interactions with video
         document.addEventListener('click', e => {
             if (isPlaying && e.target.closest('.video-container')) {
                 e.preventDefault();
@@ -655,7 +666,7 @@
             }
         });
 
-        // Prevent double-click
+        // Block double-click
         document.addEventListener('dblclick', e => {
             if (isPlaying) {
                 e.preventDefault();
@@ -664,12 +675,35 @@
             }
         });
 
-        // Prevent mouse wheel
+        // Block mouse wheel
         document.addEventListener('wheel', e => {
             if (isPlaying) {
                 e.preventDefault();
             }
         }, { passive: false });
+
+        // Block touch events
+        document.addEventListener('touchstart', e => {
+            if (isPlaying) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // Block right click
+        document.addEventListener('mousedown', e => {
+            if (e.button === 2 && isPlaying) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Block text selection
+        document.addEventListener('selectstart', e => {
+            if (isPlaying) {
+                e.preventDefault();
+                return false;
+            }
+        });
 
         // Handle Enter key in input
         document.getElementById('video-url-input').addEventListener('keypress', (e) => {
