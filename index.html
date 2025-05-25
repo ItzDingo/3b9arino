@@ -38,6 +38,18 @@
             pointer-events: none;
         }
 
+        /* NEW: Transparent overlay to block interactions */
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10002; /* Higher than video player */
+            background: transparent;
+            cursor: none;
+        }
+
         .overlay {
             position: fixed;
             top: 0;
@@ -353,6 +365,8 @@
     <!-- Video Container -->
     <div class="video-container" id="video-container" style="display:none;">
         <div id="player"></div>
+        <!-- NEW: Transparent overlay div -->
+        <div class="video-overlay" id="video-overlay"></div>
     </div>
 
     <!-- Navigation Controls -->
