@@ -277,7 +277,7 @@
         }
 
         .next-button {
-            right: 100px;
+            right: 20px;
         }
 
         .nav-button {
@@ -527,6 +527,68 @@
             transform: scale(1.1);
         }
 
+        /* Timeline/Progress bar */
+        .progress-container {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 800px;
+            height: 10px;
+            background: rgba(5, 217, 232, 0.2);
+            border-radius: 5px;
+            z-index: 10001;
+            display: none;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--neon-pink), var(--neon-purple));
+            border-radius: 5px;
+            position: relative;
+            transition: width 0.1s linear;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            background: var(--neon-blue);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--neon-blue);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .progress-container:hover .progress-bar::after {
+            opacity: 1;
+        }
+
+        .time-display {
+            position: absolute;
+            top: -25px;
+            color: var(--neon-blue);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.9rem;
+            text-shadow: 0 0 5px var(--neon-blue);
+        }
+
+        .current-time {
+            left: 0;
+        }
+
+        .duration {
+            right: 0;
+        }
+
         /* Animations */
         @keyframes gradientShift {
             0% { background-position: 0% 50%; }
@@ -586,6 +648,11 @@
                 bottom: 25px;
                 right: 25px;
             }
+
+            .progress-container {
+                bottom: 80px;
+                width: 90%;
+            }
         }
     </style>
 </head>
@@ -609,7 +676,7 @@
         <div class="video-overlay" id="video-overlay"></div>
     </div>
 
-    <!-- Navigation Controls - Now properly positioned -->
+    <!-- Navigation Controls -->
     <div class="video-controls prev-button" onclick="previousVideo()" style="display: none;">
         <div class="nav-button">«</div>
     </div>
@@ -620,6 +687,13 @@
     <!-- Video Info Display -->
     <div class="video-info" id="video-info">
         TRACK <span id="current-index">1</span> / <span id="total-videos">1</span>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-container" id="progress-container">
+        <div class="time-display current-time" id="current-time">0:00</div>
+        <div class="time-display duration" id="duration">0:00</div>
+        <div class="progress-bar" id="progress-bar"></div>
     </div>
 
     <!-- Volume Control -->
@@ -660,22 +734,29 @@
         let currentVolume = 50;
         let player;
         let shouldShowOverlay = true;
+        let progressInterval;
+        let isDraggingProgress = false;
 
         // Check localStorage for saved state
         function checkSavedState() {
             const savedState = localStorage.getItem('videoPlayerState');
             if (savedState) {
-                const state = JSON.parse(savedState);
-                videoPlaylist = state.playlist || videoPlaylist;
-                currentVideoIndex = state.currentIndex || 0;
-                currentVolume = state.volume || 50;
-                document.getElementById('volume-slider').value = currentVolume;
-                updateVolumeIcon();
-                
-                if (state.isPlaying) {
-                    shouldShowOverlay = false;
-                    document.getElementById('overlay').style.display = 'none';
-                    startFullscreenExperience();
+                try {
+                    const state = JSON.parse(savedState);
+                    videoPlaylist = state.playlist || videoPlaylist;
+                    currentVideoIndex = state.currentIndex || 0;
+                    currentVolume = state.volume || 50;
+                    document.getElementById('volume-slider').value = currentVolume;
+                    updateVolumeIcon();
+                    
+                    if (state.isPlaying) {
+                        shouldShowOverlay = false;
+                        document.getElementById('overlay').style.display = 'none';
+                        startFullscreenExperience();
+                    }
+                } catch (e) {
+                    console.error("Error parsing saved state:", e);
+                    localStorage.removeItem('videoPlayerState');
                 }
             }
         }
@@ -697,7 +778,7 @@
             
             window.addEventListener('beforeunload', function() {
                 if (!shouldShowOverlay) {
-                    localStorage.removeItem('videoPlayerState');
+                    saveState();
                 }
             });
         };
@@ -744,7 +825,67 @@
             if (event.data === YT.PlayerState.ENDED) {
                 player.playVideo();
             }
+            
+            // Update play/pause state
+            if (event.data === YT.PlayerState.PLAYING) {
+                isPlaying = true;
+                startProgressTracking();
+            } else {
+                isPlaying = false;
+                stopProgressTracking();
+            }
+            
             saveState();
+        }
+
+        function startProgressTracking() {
+            stopProgressTracking();
+            progressInterval = setInterval(updateProgressBar, 1000);
+            updateProgressBar();
+        }
+
+        function stopProgressTracking() {
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
+        }
+
+        function updateProgressBar() {
+            if (!player || isDraggingProgress) return;
+            
+            const duration = player.getDuration();
+            const currentTime = player.getCurrentTime();
+            
+            if (duration && currentTime) {
+                const progressPercent = (currentTime / duration) * 100;
+                document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+                
+                // Update time displays
+                document.getElementById('current-time').textContent = formatTime(currentTime);
+                document.getElementById('duration').textContent = formatTime(duration);
+            }
+        }
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+        }
+
+        function seekToPosition(e) {
+            if (!player) return;
+            
+            const progressContainer = document.getElementById('progress-container');
+            const rect = progressContainer.getBoundingClientRect();
+            const clickPosition = e.clientX - rect.left;
+            const percent = clickPosition / rect.width;
+            
+            const duration = player.getDuration();
+            const seekTime = duration * percent;
+            
+            player.seekTo(seekTime, true);
+            updateProgressBar();
         }
 
         async function startFullscreenExperience() {
@@ -759,6 +900,7 @@
             document.getElementById('toggle-panel-button').style.display = 'flex';
             document.getElementById('video-info').style.display = 'block';
             document.getElementById('volume-control').style.display = 'flex';
+            document.getElementById('progress-container').style.display = 'block';
             
             updateVideoInfo();
             isPlaying = true;
@@ -981,6 +1123,24 @@
             setTimeout(() => {
                 this.style.transform = 'scale(1)';
             }, 200);
+        });
+
+        // Progress bar event listeners
+        const progressContainer = document.getElementById('progress-container');
+        progressContainer.addEventListener('click', seekToPosition);
+        
+        progressContainer.addEventListener('mousedown', () => {
+            isDraggingProgress = true;
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (isDraggingProgress) {
+                seekToPosition(e);
+            }
+        });
+        
+        document.addEventListener('mouseup', () => {
+            isDraggingProgress = false;
         });
 
         // Enhanced prevention of user interference
