@@ -3,19 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3b9arino - Immersive Experience</title>
+    <title>3B9ARINO | Ultimate Music Experience</title>
     <style>
+        :root {
+            --neon-pink: #ff2a6d;
+            --neon-blue: #05d9e8;
+            --neon-purple: #d300c5;
+            --dark-bg: #0d0221;
+            --darker-bg: #05010d;
+            --glow: 0 0 10px rgba(5, 217, 232, 0.7);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Rajdhani', 'Orbitron', sans-serif;
         }
+
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Orbitron:wght@500&display=swap');
 
         body, html {
             height: 100%;
             overflow: hidden;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #000;
+            background: var(--dark-bg);
+            color: white;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(255, 42, 109, 0.15) 0%, transparent 30%),
+                radial-gradient(circle at 80% 70%, rgba(5, 217, 232, 0.15) 0%, transparent 30%);
+        }
+
+        /* Cyberpunk overlay effect */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                transparent 95%,
+                rgba(5, 217, 232, 0.03) 96%
+            );
+            background-size: 100% 0.5rem;
+            pointer-events: none;
+            z-index: 9998;
         }
 
         .video-container {
@@ -25,7 +57,7 @@
             width: 100vw;
             height: 100vh;
             z-index: 9999;
-            background: #000;
+            background: var(--darker-bg);
         }
 
         .video-player {
@@ -36,73 +68,85 @@
             top: 0;
             left: 0;
             pointer-events: none;
+            opacity: 0.9;
         }
 
-        /* NEW: Transparent overlay to block interactions */
         .video-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 10002; /* Higher than video player */
+            z-index: 10002;
             background: transparent;
         }
 
+        /* Glowing cyberpunk overlay */
         .overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(230, 0, 115, 0.3));
+            background: rgba(13, 2, 33, 0.85);
             display: flex;
             justify-content: center;
             align-items: center;
             flex-direction: column;
             z-index: 10000;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(3px);
         }
 
         .logo {
-            font-size: 6rem;
-            font-weight: 900;
-            background: linear-gradient(45deg, #ff006e, #8338ec, #3a86ff);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 5rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--neon-pink), var(--neon-purple), var(--neon-blue));
             background-size: 200% 200%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-align: center;
             animation: gradientShift 3s ease infinite, float 6s ease-in-out infinite;
-            margin-bottom: 2rem;
-            text-shadow: 0 0 30px rgba(255, 0, 110, 0.5);
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 15px var(--neon-pink), 0 0 25px var(--neon-blue);
+            letter-spacing: 3px;
         }
 
         .subtitle {
             color: rgba(255, 255, 255, 0.8);
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             text-align: center;
             margin-bottom: 3rem;
             animation: fadeInUp 2s ease;
+            font-family: 'Rajdhani', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
+        /* Cyberpunk button */
         .start-button {
-            padding: 20px 50px;
+            padding: 18px 45px;
             font-size: 1.3rem;
             font-weight: 600;
-            background: linear-gradient(45deg, #ff006e, #8338ec);
-            color: white;
-            border: none;
-            border-radius: 50px;
+            background: transparent;
+            color: var(--neon-blue);
+            border: 2px solid var(--neon-blue);
+            border-radius: 0;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 10px 30px rgba(255, 0, 110, 0.3);
             position: relative;
             overflow: hidden;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            box-shadow: var(--glow);
         }
 
         .start-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(255, 0, 110, 0.4);
+            color: var(--neon-pink);
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 15px var(--neon-pink);
+            text-shadow: 0 0 10px var(--neon-pink);
         }
 
         .start-button::before {
@@ -112,14 +156,15 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
+            background: linear-gradient(90deg, transparent, rgba(255, 42, 109, 0.3), transparent);
+            transition: left 0.7s;
         }
 
         .start-button:hover::before {
             left: 100%;
         }
 
+        /* Navigation buttons */
         .video-controls {
             position: fixed;
             top: 50%;
@@ -132,86 +177,104 @@
             width: 70px;
             height: 70px;
             border-radius: 50%;
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            font-size: 1.5rem;
+            background: rgba(13, 2, 33, 0.7);
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+            font-size: 1.8rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(5px);
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: var(--glow);
+            font-family: 'Orbitron', sans-serif;
         }
 
         .nav-button:hover {
-            background: rgba(255, 0, 110, 0.8);
-            border-color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 42, 109, 0.3);
+            border-color: var(--neon-pink);
+            color: var(--neon-pink);
+            box-shadow: 0 0 15px var(--neon-pink);
             transform: scale(1.1);
         }
 
-        .prev-button {
-            left: 30px;
-        }
-
-        .next-button {
-            right: 30px;
-        }
-
+        /* Panel styling */
         .add-video-panel {
             position: fixed;
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(15px);
+            background: rgba(13, 2, 33, 0.9);
+            backdrop-filter: blur(10px);
             padding: 20px;
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            border: 1px solid var(--neon-blue);
             z-index: 10001;
             display: none;
             width: 400px;
+            box-shadow: var(--glow);
         }
 
         .panel-title {
-            color: white;
-            font-size: 1.1rem;
+            color: var(--neon-blue);
+            font-size: 1.2rem;
             font-weight: 600;
             margin-bottom: 15px;
             text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
         .add-video-input {
             width: 100%;
             padding: 12px 15px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--neon-blue);
+            border-radius: 0;
+            background: rgba(5, 217, 232, 0.1);
             color: white;
             font-size: 14px;
             margin-bottom: 10px;
-        }
-
-        .add-video-input::placeholder {
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .add-video-button {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(45deg, #ff006e, #8338ec);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
+            font-family: 'Rajdhani', sans-serif;
             transition: all 0.3s ease;
         }
 
-        .add-video-button:hover {
-            transform: translateY(-2px);
+        .add-video-input:focus {
+            outline: none;
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 10px var(--neon-pink);
         }
 
+        .add-video-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        /* Cyberpunk panel button */
+        .add-video-button {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+            border-radius: 0;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .add-video-button:hover {
+            background: rgba(255, 42, 109, 0.2);
+            color: var(--neon-pink);
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 10px var(--neon-pink);
+        }
+
+        /* Toggle button */
         .toggle-panel-button {
             position: fixed;
             bottom: 30px;
@@ -219,41 +282,46 @@
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            color: white;
+            background: rgba(13, 2, 33, 0.7);
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
             font-size: 1.8rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(5px);
             z-index: 10001;
             display: none;
             display: flex;
             align-items: center;
             justify-content: center;
-            line-height: 1;
+            box-shadow: var(--glow);
         }
 
         .toggle-panel-button:hover {
-            background: rgba(255, 0, 110, 0.8);
+            border-color: var(--neon-pink);
+            color: var(--neon-pink);
+            box-shadow: 0 0 15px var(--neon-pink);
             transform: scale(1.1);
         }
 
+        /* Info display */
         .video-info {
             position: fixed;
-            top: 30px;
-            left: 30px;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 15px 20px;
-            border-radius: 10px;
-            color: white;
+            top: 20px;
+            left: 20px;
+            background: rgba(13, 2, 33, 0.7);
+            backdrop-filter: blur(5px);
+            padding: 10px 15px;
+            border-radius: 0;
+            color: var(--neon-blue);
             z-index: 10001;
             display: none;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid var(--neon-blue);
+            font-family: 'Rajdhani', sans-serif;
+            box-shadow: var(--glow);
         }
 
-        /* Volume Control Styles */
+        /* Volume control */
         .volume-control {
             position: fixed;
             bottom: 30px;
@@ -262,26 +330,21 @@
             display: none;
             align-items: center;
             gap: 10px;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
+            background: rgba(13, 2, 33, 0.7);
+            backdrop-filter: blur(5px);
             padding: 10px 15px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0;
+            border: 1px solid var(--neon-blue);
+            box-shadow: var(--glow);
         }
 
         .volume-slider {
             width: 100px;
             -webkit-appearance: none;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
+            height: 4px;
+            background: rgba(5, 217, 232, 0.3);
+            border-radius: 2px;
             outline: none;
-            opacity: 0.7;
-            transition: opacity 0.2s;
-        }
-
-        .volume-slider:hover {
-            opacity: 1;
         }
 
         .volume-slider::-webkit-slider-thumb {
@@ -289,18 +352,26 @@
             width: 15px;
             height: 15px;
             border-radius: 50%;
-            background: #ff006e;
+            background: var(--neon-blue);
             cursor: pointer;
+            box-shadow: 0 0 5px var(--neon-blue);
         }
 
         .volume-icon {
-            color: white;
+            color: var(--neon-blue);
             font-size: 1.5rem;
             cursor: pointer;
             width: 24px;
             text-align: center;
+            transition: all 0.3s ease;
         }
 
+        .volume-icon:hover {
+            color: var(--neon-pink);
+            text-shadow: 0 0 10px var(--neon-pink);
+        }
+
+        /* Animations */
         @keyframes gradientShift {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
@@ -309,7 +380,7 @@
 
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+            50% { transform: translateY(-10px); }
         }
 
         @keyframes fadeInUp {
@@ -323,24 +394,38 @@
             }
         }
 
+        /* Glitch effect on hover */
+        .logo:hover {
+            animation: glitch 1s linear infinite;
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-3px, 3px); }
+            40% { transform: translate(-3px, -3px); }
+            60% { transform: translate(3px, 3px); }
+            80% { transform: translate(3px, -3px); }
+            100% { transform: translate(0); }
+        }
+
+        /* Responsive design */
         @media (max-width: 768px) {
             .logo {
-                font-size: 4rem;
+                font-size: 3rem;
             }
             
             .subtitle {
-                font-size: 1.2rem;
+                font-size: 1rem;
             }
             
             .nav-button {
                 width: 50px;
                 height: 50px;
-                font-size: 1.2rem;
+                font-size: 1.5rem;
             }
             
             .add-video-panel {
                 width: 300px;
-                margin: 0 20px;
             }
             
             .volume-control {
@@ -352,33 +437,35 @@
     </style>
 </head>
 <body>
+    <!-- Scanlines effect -->
+    <div class="scanlines"></div>
+
     <!-- Loading Overlay -->
     <div class="overlay" id="overlay">
         <h1 class="logo">3B9ARINO</h1>
-        <p class="subtitle">Immersive Video Experience</p>
+        <p class="subtitle">Cyberpunk Music Experience</p>
         <button class="start-button" onclick="startFullscreenExperience()">
-            Begin Journey
+            Initiate Sequence
         </button>
     </div>
 
     <!-- Video Container -->
     <div class="video-container" id="video-container" style="display:none;">
         <div id="player"></div>
-        <!-- NEW: Transparent overlay div -->
         <div class="video-overlay" id="video-overlay"></div>
     </div>
 
     <!-- Navigation Controls -->
     <div class="video-controls prev-button nav-button" onclick="previousVideo()" style="display: none;">
-        &#8249;
+        «
     </div>
     <div class="video-controls next-button nav-button" onclick="nextVideo()" style="display: none;">
-        &#8250;
+        »
     </div>
 
     <!-- Video Info Display -->
     <div class="video-info" id="video-info">
-        Video <span id="current-index">1</span> of <span id="total-videos">1</span>
+        TRACK <span id="current-index">1</span> / <span id="total-videos">1</span>
     </div>
 
     <!-- Volume Control -->
@@ -389,14 +476,14 @@
 
     <!-- Add Video Panel -->
     <div class="add-video-panel" id="add-video-panel">
-        <div class="panel-title">Add New Video</div>
+        <div class="panel-title">Add New Track</div>
         <input 
             type="text" 
             class="add-video-input" 
             id="video-url-input" 
-            placeholder="Enter YouTube URL or Video ID"
+            placeholder="Enter YouTube URL or ID"
         >
-        <button class="add-video-button" onclick="addVideo()">Add Video</button>
+        <button class="add-video-button" onclick="addVideo()">Upload Track</button>
     </div>
 
     <!-- Toggle Panel Button -->
@@ -478,8 +565,7 @@
                     'enablejsapi': 1,
                     'iv_load_policy': 3,
                     'cc_load_policy': 0,
-                    'showinfo': 0,
-                    'playlist': videoPlaylist.join(',')
+                    'showinfo': 0
                 },
                 events: {
                     'onReady': onPlayerReady,
@@ -508,47 +594,44 @@
         }
 
         async function startFullscreenExperience() {
-    // Show loading state if needed
-    document.getElementById('overlay').style.display = 'none';
-    document.getElementById('video-container').style.display = 'block';
-    
-    // Show controls
-    document.querySelectorAll('.video-controls').forEach(el => {
-        el.style.display = 'flex';
-    });
-    document.getElementById('toggle-panel-button').style.display = 'flex';
-    document.getElementById('video-info').style.display = 'block';
-    document.getElementById('volume-control').style.display = 'flex';
-    
-    // Load and play the video
-    loadVideo(currentVideoIndex);
-    
-    updateVideoInfo();
-    isPlaying = true;
-    shouldShowOverlay = false;
-    saveState();
-}
+            loadVideo(currentVideoIndex);
+            
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('video-container').style.display = 'block';
+            
+            document.querySelectorAll('.video-controls').forEach(el => {
+                el.style.display = 'flex';
+            });
+            document.getElementById('toggle-panel-button').style.display = 'flex';
+            document.getElementById('video-info').style.display = 'block';
+            document.getElementById('volume-control').style.display = 'flex';
+            
+            updateVideoInfo();
+            isPlaying = true;
+            shouldShowOverlay = false;
+            saveState();
+        }
 
         function loadVideo(index) {
-    if (index < 0 || index >= videoPlaylist.length) return;
-    
-    const videoId = videoPlaylist[index];
-    currentVideoIndex = index;
-    
-    if (player) {
-        player.loadVideoById({
-            videoId: videoId,
-            startSeconds: 0,
-            suggestedQuality: 'highres'
-        });
-        player.playVideo(); // Explicitly start playback
-        player.setLoop(true);
-        player.setVolume(currentVolume);
-    }
-    
-    updateVideoInfo();
-    saveState();
-}
+            if (index < 0 || index >= videoPlaylist.length) return;
+            
+            const videoId = videoPlaylist[index];
+            currentVideoIndex = index;
+            
+            if (player) {
+                player.loadVideoById({
+                    videoId: videoId,
+                    startSeconds: 0,
+                    suggestedQuality: 'highres'
+                });
+                player.playVideo();
+                player.setLoop(true);
+                player.setVolume(currentVolume);
+            }
+            
+            updateVideoInfo();
+            saveState();
+        }
 
         function nextVideo() {
             const nextIndex = (currentVideoIndex + 1) % videoPlaylist.length;
@@ -575,12 +658,16 @@
                 
                 const button = document.querySelector('.add-video-button');
                 const originalText = button.textContent;
-                button.textContent = 'Added!';
-                button.style.background = 'linear-gradient(45deg, #00ff88, #00cc6a)';
+                button.textContent = 'TRACK UPLOADED';
+                button.style.background = 'rgba(0, 255, 136, 0.1)';
+                button.style.borderColor = 'var(--neon-pink)';
+                button.style.color = 'var(--neon-pink)';
                 
                 setTimeout(() => {
                     button.textContent = originalText;
-                    button.style.background = 'linear-gradient(45deg, #ff006e, #8338ec)';
+                    button.style.background = 'transparent';
+                    button.style.borderColor = 'var(--neon-blue)';
+                    button.style.color = 'var(--neon-blue)';
                 }, 1500);
                 
                 saveState();
@@ -607,8 +694,8 @@
             
             if (panel.style.display === 'none' || !panel.style.display) {
                 panel.style.display = 'block';
-                button.innerHTML = '×';
-                button.style.fontSize = '2.5rem';
+                button.innerHTML = '✕';
+                button.style.fontSize = '2.2rem';
             } else {
                 panel.style.display = 'none';
                 button.innerHTML = '♫';
@@ -625,10 +712,13 @@
             const volumeIcon = document.getElementById('volume-icon');
             if (currentVolume == 0) {
                 volumeIcon.textContent = '🔇';
+                volumeIcon.style.color = 'var(--neon-pink)';
             } else if (currentVolume < 30) {
                 volumeIcon.textContent = '🔈';
+                volumeIcon.style.color = 'var(--neon-blue)';
             } else {
                 volumeIcon.textContent = '🔊';
+                volumeIcon.style.color = 'var(--neon-blue)';
             }
         }
 
