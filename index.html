@@ -467,7 +467,7 @@
                 height: '100%',
                 width: '100%',
                 playerVars: {
-                    'autoplay': 1,
+                    'autoplay': 0,
                     'controls': 0,
                     'disablekb': 1,
                     'fs': 0,
@@ -508,46 +508,47 @@
         }
 
         async function startFullscreenExperience() {
-            loadVideo(currentVideoIndex);
-            
-            document.getElementById('overlay').style.display = 'none';
-            document.getElementById('video-container').style.display = 'block';
-            
-            document.querySelectorAll('.video-controls').forEach(el => {
-                el.style.display = 'flex';
-            });
-            document.getElementById('toggle-panel-button').style.display = 'flex';
-            document.getElementById('video-info').style.display = 'block';
-            document.getElementById('volume-control').style.display = 'flex';
-            
-            updateVideoInfo();
-            isPlaying = true;
-            shouldShowOverlay = false;
-            saveState();
-        }
+    // Show loading state if needed
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('video-container').style.display = 'block';
+    
+    // Show controls
+    document.querySelectorAll('.video-controls').forEach(el => {
+        el.style.display = 'flex';
+    });
+    document.getElementById('toggle-panel-button').style.display = 'flex';
+    document.getElementById('video-info').style.display = 'block';
+    document.getElementById('volume-control').style.display = 'flex';
+    
+    // Load and play the video
+    loadVideo(currentVideoIndex);
+    
+    updateVideoInfo();
+    isPlaying = true;
+    shouldShowOverlay = false;
+    saveState();
+}
 
         function loadVideo(index) {
-            if (index < 0 || index >= videoPlaylist.length) return;
-            
-            const videoId = videoPlaylist[index];
-            currentVideoIndex = index;
-            
-            if (player) {
-                // Load video as a playlist with just itself for perfect looping
-                player.loadVideoById({
-                    videoId: videoId,
-                    startSeconds: 0,
-                    suggestedQuality: 'highres'
-                });
-                player.setLoop(true);
-                player.setVolume(currentVolume);
-                player.mute(); // Start muted to avoid autoplay issues
-                player.unMute(); // Then unmute (works because user has interacted)
-            }
-            
-            updateVideoInfo();
-            saveState();
-        }
+    if (index < 0 || index >= videoPlaylist.length) return;
+    
+    const videoId = videoPlaylist[index];
+    currentVideoIndex = index;
+    
+    if (player) {
+        player.loadVideoById({
+            videoId: videoId,
+            startSeconds: 0,
+            suggestedQuality: 'highres'
+        });
+        player.playVideo(); // Explicitly start playback
+        player.setLoop(true);
+        player.setVolume(currentVolume);
+    }
+    
+    updateVideoInfo();
+    saveState();
+}
 
         function nextVideo() {
             const nextIndex = (currentVideoIndex + 1) % videoPlaylist.length;
